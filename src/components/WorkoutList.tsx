@@ -13,6 +13,27 @@ function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
 }
 
+function getWeekStart(weeksAgo: number): Date {
+  const now = new Date();
+  const day = now.getDay();
+  const mondayOffset = day === 0 ? -6 : 1 - day;
+  const monday = new Date(now);
+  monday.setDate(now.getDate() + mondayOffset - weeksAgo * 7);
+  monday.setHours(0, 0, 0, 0);
+  return monday;
+}
+
+function filterByWeek(workouts: Workout[], weeksAgo: number): Workout[] {
+  if (weeksAgo === -1) return workouts;
+  const start = getWeekStart(weeksAgo);
+  const end = new Date(start);
+  end.setDate(start.getDate() + 7);
+  return workouts.filter(w => {
+    const d = new Date(w.date);
+    return d >= start && d < end;
+  });
+}
+
 function WorkoutCategories({ workout }: { workout: Workout }) {
   const cats = new Set(workout.exercises.map(e => e.category));
   return (
@@ -28,6 +49,9 @@ export function WorkoutList({ workouts, onSelect, onCreate, onDelete }: Props) {
   const [showModal, setShowModal] = useState(false);
   const [name, setName] = useState('');
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+  const [weeksAgo, setWeeksAgo] = useState(0);
+
+  const filtered = filterByWeek(workouts, weeksAgo);
 
   function handleCreate() {
     const trimmed = name.trim();
@@ -42,17 +66,28 @@ export function WorkoutList({ workouts, onSelect, onCreate, onDelete }: Props) {
       <div className="header">
         <Dumbbell size={22} color="var(--accent-lift)" />
         <h1>Gym Tracker</h1>
+        <select
+          className="week-select"
+          value={weeksAgo}
+          onChange={e => setWeeksAgo(Number(e.target.value))}
+        >
+          <option value={0}>This week</option>
+          <option value={1}>Last week</option>
+          <option value={2}>2 weeks ago</option>
+          <option value={3}>3 weeks ago</option>
+          <option value={-1}>All time</option>
+        </select>
       </div>
 
       <div className="page">
-        {workouts.length === 0 ? (
+        {filtered.length === 0 ? (
           <div className="empty-state">
             <Dumbbell size={52} />
-            <strong>No workouts yet</strong>
-            <p>Tap the button below to start your first workout session</p>
+            <strong>{workouts.length === 0 ? 'No workouts yet' : 'No workouts this period'}</strong>
+            <p>{workouts.length === 0 ? 'Tap the button below to start your first workout session' : 'Try selecting a different week or create a new workout'}</p>
           </div>
         ) : (
-          workouts.map(w => {
+          filtered.map(w => {
             const totalSets = w.exercises.reduce((s, e) => s + e.sets.length, 0);
             const doneSets = w.exercises.reduce((s, e) => s + e.sets.filter(st => st.completed).length, 0);
             return (
