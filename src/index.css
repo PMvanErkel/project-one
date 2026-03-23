@@ -5,19 +5,19 @@
 }
 
 :root {
-  --bg: #0f0f0f;
-  --surface: #1a1a1a;
-  --surface2: #242424;
-  --surface3: #2e2e2e;
-  --border: #333;
-  --text: #f0f0f0;
-  --text-muted: #888;
-  --accent-lift: #f97316;
-  --accent-cardio: #22d3ee;
-  --accent-recovery: #a78bfa;
-  --accent-lift-dim: rgba(249,115,22,0.15);
-  --accent-cardio-dim: rgba(34,211,238,0.15);
-  --accent-recovery-dim: rgba(167,139,250,0.15);
+  --bg: #000000;
+  --surface: #0b1526;
+  --surface2: #112040;
+  --surface3: #162a55;
+  --border: #1e3d6e;
+  --text: #ffffff;
+  --text-muted: #6b8eb5;
+  --accent-lift: #2563eb;
+  --accent-cardio: #38bdf8;
+  --accent-recovery: #818cf8;
+  --accent-lift-dim: rgba(37,99,235,0.15);
+  --accent-cardio-dim: rgba(56,189,248,0.15);
+  --accent-recovery-dim: rgba(129,140,248,0.15);
   --green: #4ade80;
   --red: #f87171;
   --radius: 12px;
@@ -72,6 +72,17 @@ input:focus, select:focus { border-color: var(--accent-lift); }
 .header h1 { font-size: 1.1rem; font-weight: 700; flex: 1; }
 .header .subtitle { font-size: 0.75rem; color: var(--text-muted); }
 
+.week-select {
+  width: auto;
+  padding: 6px 10px;
+  font-size: 0.8rem;
+  border-radius: var(--radius-sm);
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  flex-shrink: 0;
+}
+
 .back-btn {
   width: 36px; height: 36px;
   display: flex; align-items: center; justify-content: center;
@@ -124,7 +135,7 @@ input:focus, select:focus { border-color: var(--accent-lift); }
   padding: 14px 20px; border-radius: 100px;
   font-size: 1rem; font-weight: 700;
   display: flex; align-items: center; justify-content: center; gap: 8px;
-  box-shadow: 0 4px 24px rgba(249,115,22,0.4);
+  box-shadow: 0 4px 24px rgba(37,99,235,0.4);
   z-index: 5;
 }
 

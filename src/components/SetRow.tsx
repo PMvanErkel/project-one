@@ -25,6 +25,7 @@ export function SetRow({ set, index, category, onUpdate, onDelete }: Props) {
                 type="number"
                 inputMode="decimal"
                 min={0}
+                step="any"
                 value={set.weight || ''}
                 onChange={e => onUpdate({ weight: parseFloat(e.target.value) || 0 })}
               />
