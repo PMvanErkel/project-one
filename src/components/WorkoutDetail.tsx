@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { ArrowLeft, Plus } from 'lucide-react';
 import {
   DndContext,
@@ -14,11 +14,51 @@ import {
   verticalListSortingStrategy,
   arrayMove,
 } from '@dnd-kit/sortable';
-import type { Workout, Exercise, ExerciseSet, ExerciseCategory } from '../types';
+import type { Workout, Exercise, ExerciseSet, ExerciseCategory, WeightliftingSet } from '../types';
 import { ExerciseCard } from './ExerciseCard';
+
+interface ExerciseSuggestion {
+  name: string;
+  category: ExerciseCategory;
+  lastSet: ExerciseSet | null;
+}
+
+function getExerciseSuggestions(query: string, allWorkouts: Workout[], currentWorkoutId: string): ExerciseSuggestion[] {
+  if (!query.trim()) return [];
+  const q = query.toLowerCase();
+  const seen = new Map<string, ExerciseSuggestion>();
+  const sorted = [...allWorkouts].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  for (const workout of sorted) {
+    if (workout.id === currentWorkoutId) continue;
+    for (const exercise of workout.exercises) {
+      if (!seen.has(exercise.name.toLowerCase())) {
+        seen.set(exercise.name.toLowerCase(), {
+          name: exercise.name,
+          category: exercise.category,
+          lastSet: exercise.sets.length > 0 ? exercise.sets[exercise.sets.length - 1] : null,
+        });
+      }
+    }
+  }
+  return Array.from(seen.values())
+    .filter(s => s.name.toLowerCase().includes(q))
+    .slice(0, 6);
+}
+
+function formatLastSet(set: ExerciseSet | null): string {
+  if (!set) return '';
+  if (set.type === 'weightlifting') {
+    const w = set as WeightliftingSet;
+    return `${w.weight}${w.unit} × ${w.reps} reps`;
+  }
+  const mins = Math.floor(set.duration / 60);
+  const secs = set.duration % 60;
+  return `${mins}:${secs.toString().padStart(2, '0')}`;
+}
 
 interface Props {
   workout: Workout;
+  allWorkouts: Workout[];
   onBack: () => void;
   onAddExercise: (name: string, category: ExerciseCategory) => void;
   onDeleteExercise: (exerciseId: string) => void;
@@ -39,6 +79,7 @@ const CATEGORIES: { value: ExerciseCategory; label: string; chip: string }[] = [
 
 export function WorkoutDetail({
   workout,
+  allWorkouts,
   onBack,
   onAddExercise,
   onDeleteExercise,
@@ -52,6 +93,22 @@ export function WorkoutDetail({
   const [showModal, setShowModal] = useState(false);
   const [newName, setNewName] = useState('');
   const [newCategory, setNewCategory] = useState<ExerciseCategory>('weightlifting');
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const suggestionsRef = useRef<HTMLDivElement>(null);
+
+  const suggestions = getExerciseSuggestions(newName, allWorkouts, workout.id);
+
+  useEffect(() => {
+    if (!showModal) setShowSuggestions(false);
+  }, [showModal]);
+
+  function handleSuggestionClick(s: ExerciseSuggestion) {
+    setNewName(s.name);
+    setNewCategory(s.category);
+    setShowSuggestions(false);
+    inputRef.current?.focus();
+  }
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -173,15 +230,37 @@ export function WorkoutDetail({
           <div className="modal" onClick={e => e.stopPropagation()}>
             <h2>Add Exercise</h2>
 
-            <div className="form-row">
+            <div className="form-row" style={{ position: 'relative' }}>
               <label className="form-label">Exercise name</label>
               <input
+                ref={inputRef}
                 autoFocus
                 placeholder="e.g. Bench Press, 5km Run…"
                 value={newName}
-                onChange={e => setNewName(e.target.value)}
+                onChange={e => { setNewName(e.target.value); setShowSuggestions(true); }}
+                onFocus={() => setShowSuggestions(true)}
                 onKeyDown={e => e.key === 'Enter' && handleAdd()}
+                autoComplete="off"
               />
+              {showSuggestions && suggestions.length > 0 && (
+                <div className="exercise-suggestions" ref={suggestionsRef}>
+                  {suggestions.map(s => (
+                    <button
+                      key={s.name}
+                      className="suggestion-item"
+                      onMouseDown={e => { e.preventDefault(); handleSuggestionClick(s); }}
+                    >
+                      <span className={`suggestion-badge ${s.category === 'weightlifting' ? 'badge-lift' : s.category === 'cardio' ? 'badge-cardio' : 'badge-recovery'}`}>
+                        {s.category === 'weightlifting' ? 'Lift' : s.category === 'cardio' ? 'Cardio' : 'Recovery'}
+                      </span>
+                      <span className="suggestion-name">{s.name}</span>
+                      {s.lastSet && (
+                        <span className="suggestion-last">{formatLastSet(s.lastSet)}</span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div className="form-row">

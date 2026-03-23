@@ -297,3 +297,34 @@ input:focus, select:focus { border-color: var(--accent-lift); }
 
 .sortable-item { transition: transform 0.15s; }
 .sortable-item.dragging { opacity: 0.5; z-index: 999; }
+
+.exercise-suggestions {
+  position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); overflow: hidden;
+  z-index: 200; box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+}
+
+.suggestion-item {
+  display: flex; align-items: center; gap: 8px;
+  width: 100%; padding: 10px 12px; text-align: left;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.1s;
+}
+.suggestion-item:last-child { border-bottom: none; }
+.suggestion-item:active { background: var(--surface3); }
+
+.suggestion-badge {
+  font-size: 0.62rem; font-weight: 700; padding: 2px 7px;
+  border-radius: 100px; text-transform: uppercase; letter-spacing: 0.05em;
+  flex-shrink: 0;
+}
+
+.suggestion-name {
+  flex: 1; font-size: 0.9rem; font-weight: 600; white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis;
+}
+
+.suggestion-last {
+  font-size: 0.78rem; color: var(--text-muted); white-space: nowrap; flex-shrink: 0;
+}

@@ -21,6 +21,7 @@ export default function App() {
       <div className="app">
         <WorkoutDetail
           workout={currentWorkout}
+          allWorkouts={store.workouts}
           onBack={() => setActiveWorkoutId(null)}
           onAddExercise={(name, category) => store.addExercise(currentWorkout.id, name, category)}
           onDeleteExercise={id => store.deleteExercise(currentWorkout.id, id)}
