@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { ArrowLeft, Plus } from 'lucide-react';
+import { ArrowLeft, Plus, Calendar } from 'lucide-react';
 import {
   DndContext,
   closestCenter,
@@ -66,6 +66,7 @@ interface Props {
   onAddSet: (exerciseId: string, set: ExerciseSet) => void;
   onUpdateSet: (exerciseId: string, setId: string, updates: Partial<ExerciseSet>) => void;
   onDeleteSet: (exerciseId: string, setId: string) => void;
+  onUpdateDate: (date: string) => void;
   generateId: () => string;
 }
 
@@ -77,6 +78,16 @@ const CATEGORIES: { value: ExerciseCategory; label: string; chip: string }[] = [
   { value: 'recovery', label: 'Recovery', chip: 'chip-recovery' },
 ];
 
+function toDateInput(iso: string): string {
+  const d = new Date(iso);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+function fromDateInput(val: string): string {
+  const [y, m, day] = val.split('-').map(Number);
+  return new Date(y, m - 1, day, 12, 0, 0).toISOString();
+}
+
 export function WorkoutDetail({
   workout,
   allWorkouts,
@@ -87,10 +98,12 @@ export function WorkoutDetail({
   onAddSet,
   onUpdateSet,
   onDeleteSet,
+  onUpdateDate,
   generateId,
 }: Props) {
   const [filter, setFilter] = useState<FilterCategory>('all');
   const [showModal, setShowModal] = useState(false);
+  const [editingDate, setEditingDate] = useState(false);
   const [newName, setNewName] = useState('');
   const [newCategory, setNewCategory] = useState<ExerciseCategory>('weightlifting');
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -153,8 +166,24 @@ export function WorkoutDetail({
         </button>
         <div style={{ flex: 1, minWidth: 0 }}>
           <h1 style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{workout.name}</h1>
-          <div className="subtitle">
-            {new Date(workout.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+          <div className="subtitle" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            {editingDate ? (
+              <input
+                type="date"
+                value={toDateInput(workout.date)}
+                onChange={e => { if (e.target.value) { onUpdateDate(fromDateInput(e.target.value)); setEditingDate(false); } }}
+                onBlur={() => setEditingDate(false)}
+                autoFocus
+                style={{ fontSize: '0.75rem', padding: '2px 4px', width: 'auto', background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 4, color: 'var(--text)' }}
+              />
+            ) : (
+              <>
+                {new Date(workout.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+                <button onClick={() => setEditingDate(true)} style={{ color: 'var(--text-muted)', padding: 0, display: 'flex' }} aria-label="Edit date">
+                  <Calendar size={11} />
+                </button>
+              </>
+            )}
           </div>
         </div>
       </div>

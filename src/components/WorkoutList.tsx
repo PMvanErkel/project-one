@@ -5,7 +5,7 @@ import type { Workout } from '../types';
 interface Props {
   workouts: Workout[];
   onSelect: (workout: Workout) => void;
-  onCreate: (name: string) => void;
+  onCreate: (name: string, date: string) => void;
   onDelete: (id: string) => void;
 }
 
@@ -45,9 +45,20 @@ function WorkoutCategories({ workout }: { workout: Workout }) {
   );
 }
 
+function todayValue(): string {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+function dateInputToISO(val: string): string {
+  const [y, m, day] = val.split('-').map(Number);
+  return new Date(y, m - 1, day, 12, 0, 0).toISOString();
+}
+
 export function WorkoutList({ workouts, onSelect, onCreate, onDelete }: Props) {
   const [showModal, setShowModal] = useState(false);
   const [name, setName] = useState('');
+  const [dateVal, setDateVal] = useState(todayValue);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
   const [weeksAgo, setWeeksAgo] = useState(0);
 
@@ -56,8 +67,9 @@ export function WorkoutList({ workouts, onSelect, onCreate, onDelete }: Props) {
   function handleCreate() {
     const trimmed = name.trim();
     if (!trimmed) return;
-    onCreate(trimmed);
+    onCreate(trimmed, dateInputToISO(dateVal));
     setName('');
+    setDateVal(todayValue());
     setShowModal(false);
   }
 
@@ -138,6 +150,14 @@ export function WorkoutList({ workouts, onSelect, onCreate, onDelete }: Props) {
                 value={name}
                 onChange={e => setName(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleCreate()}
+              />
+            </div>
+            <div className="form-row">
+              <label className="form-label">Date</label>
+              <input
+                type="date"
+                value={dateVal}
+                onChange={e => setDateVal(e.target.value)}
               />
             </div>
             <div className="modal-actions">
