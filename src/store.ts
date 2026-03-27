@@ -132,6 +132,14 @@ export function useGymStore() {
     return generateId();
   }
 
+  function importWorkouts(incoming: Workout[]) {
+    setWorkouts(prev => {
+      const existingIds = new Set(prev.map(w => w.id));
+      const newOnes = incoming.filter(w => !existingIds.has(w.id));
+      return [...newOnes, ...prev];
+    });
+  }
+
   return {
     workouts,
     createWorkout,
@@ -144,5 +152,6 @@ export function useGymStore() {
     updateSet,
     deleteSet,
     generateSetId,
+    importWorkouts,
   };
 }

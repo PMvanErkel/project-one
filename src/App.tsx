@@ -43,6 +43,7 @@ export default function App() {
         onSelect={w => setActiveWorkoutId(w.id)}
         onCreate={handleCreateWorkout}
         onDelete={store.deleteWorkout}
+        onImport={store.importWorkouts}
       />
     </div>
   );

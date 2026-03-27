@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Plus, Dumbbell, ChevronRight, Trash2 } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { Plus, Dumbbell, ChevronRight, Trash2, Share2 } from 'lucide-react';
 import type { Workout } from '../types';
 
 interface Props {
@@ -7,6 +7,7 @@ interface Props {
   onSelect: (workout: Workout) => void;
   onCreate: (name: string, date: string) => void;
   onDelete: (id: string) => void;
+  onImport: (workouts: Workout[]) => void;
 }
 
 function formatDate(iso: string) {
@@ -55,12 +56,49 @@ function dateInputToISO(val: string): string {
   return new Date(y, m - 1, day, 12, 0, 0).toISOString();
 }
 
-export function WorkoutList({ workouts, onSelect, onCreate, onDelete }: Props) {
+export function WorkoutList({ workouts, onSelect, onCreate, onDelete, onImport }: Props) {
   const [showModal, setShowModal] = useState(false);
+  const [showDataModal, setShowDataModal] = useState(false);
+  const [importText, setImportText] = useState('');
+  const [importError, setImportError] = useState('');
+  const [importDone, setImportDone] = useState(false);
   const [name, setName] = useState('');
   const [dateVal, setDateVal] = useState(todayValue);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
   const [weeksAgo, setWeeksAgo] = useState(0);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  function handleExport() {
+    const json = JSON.stringify(workouts, null, 2);
+    if (navigator.share) {
+      navigator.share({ title: 'Gym Tracker Data', text: json }).catch(() => {});
+    } else {
+      navigator.clipboard.writeText(json).then(() => alert('Copied to clipboard!')).catch(() => {});
+    }
+  }
+
+  function handleImport() {
+    setImportError('');
+    try {
+      const parsed = JSON.parse(importText);
+      const arr = Array.isArray(parsed) ? parsed : null;
+      if (!arr) throw new Error('Expected a JSON array');
+      onImport(arr);
+      setImportDone(true);
+      setImportText('');
+    } catch (e) {
+      setImportError('Invalid data — paste the full JSON from Export.');
+    }
+  }
+
+  function handleFileImport(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => setImportText(ev.target?.result as string ?? '');
+    reader.readAsText(file);
+    e.target.value = '';
+  }
 
   const filtered = filterByWeek(workouts, weeksAgo);
 
@@ -78,6 +116,13 @@ export function WorkoutList({ workouts, onSelect, onCreate, onDelete }: Props) {
       <div className="header">
         <Dumbbell size={22} color="var(--accent-lift)" />
         <h1>Gym Tracker</h1>
+        <button
+          onClick={() => { setShowDataModal(true); setImportDone(false); setImportError(''); }}
+          style={{ color: 'var(--text-muted)', padding: 4, display: 'flex', flexShrink: 0 }}
+          aria-label="Export / Import data"
+        >
+          <Share2 size={18} />
+        </button>
         <select
           className="week-select"
           value={weeksAgo}
@@ -137,6 +182,46 @@ export function WorkoutList({ workouts, onSelect, onCreate, onDelete }: Props) {
       <button className="fab" onClick={() => setShowModal(true)}>
         <Plus size={20} /> New Workout
       </button>
+
+      {showDataModal && (
+        <div className="modal-overlay" onClick={() => setShowDataModal(false)}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <h2>Export / Import</h2>
+
+            <div className="form-row">
+              <label className="form-label">Export your data</label>
+              <button className="btn btn-secondary" onClick={handleExport} style={{ textAlign: 'center' }}>
+                {'share' in navigator ? 'Share / Export JSON' : 'Copy JSON to clipboard'}
+              </button>
+              <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: 6 }}>
+                Tap Export in Safari, then open the home screen app and paste it below.
+              </p>
+            </div>
+
+            <div className="form-row">
+              <label className="form-label">Import — paste JSON</label>
+              <textarea
+                rows={5}
+                placeholder='Paste exported JSON here…'
+                value={importText}
+                onChange={e => { setImportText(e.target.value); setImportError(''); setImportDone(false); }}
+                style={{ font: 'inherit', fontSize: '0.8rem', resize: 'vertical', background: 'var(--surface3)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', padding: 8, color: 'var(--text)', width: '100%' }}
+              />
+              <input ref={fileInputRef} type="file" accept=".json,application/json" onChange={handleFileImport} style={{ display: 'none' }} />
+              <button className="btn btn-secondary" onClick={() => fileInputRef.current?.click()} style={{ textAlign: 'center', marginTop: 4 }}>
+                Or pick a .json file
+              </button>
+              {importError && <p style={{ fontSize: '0.78rem', color: 'var(--red)', marginTop: 4 }}>{importError}</p>}
+              {importDone && <p style={{ fontSize: '0.78rem', color: 'var(--green)', marginTop: 4 }}>Imported successfully!</p>}
+            </div>
+
+            <div className="modal-actions">
+              <button className="btn btn-secondary" onClick={() => setShowDataModal(false)}>Close</button>
+              <button className="btn btn-primary" onClick={handleImport} disabled={!importText.trim()}>Import</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showModal && (
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
