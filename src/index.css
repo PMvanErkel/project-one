@@ -137,7 +137,7 @@ input:focus, select:focus { border-color: var(--accent-lift); }
   padding: 14px 20px; border-radius: 100px;
   font-size: 1rem; font-weight: 700;
   display: flex; align-items: center; justify-content: center; gap: 8px;
-  box-shadow: 0 4px 24px rgba(37,99,235,0.4);
+  box-shadow: 0 4px 20px rgba(107,122,82,0.35);
   z-index: 5;
 }
 
