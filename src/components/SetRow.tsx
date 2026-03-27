@@ -28,12 +28,11 @@ export function SetRow({ set, index, category, onUpdate, onDelete }: Props) {
               <div className="set-field">
                 <span className={labelClass}>Weight</span>
                 <input
-                  type="number"
+                  key={set.id + '_w'}
+                  type="text"
                   inputMode="decimal"
-                  min={0}
-                  step="any"
-                  value={set.weight || ''}
-                  onChange={e => onUpdate({ weight: parseFloat(e.target.value) || 0 } as Partial<ExerciseSet>)}
+                  defaultValue={set.weight || ''}
+                  onChange={e => { const v = parseFloat(e.target.value); if (!isNaN(v)) onUpdate({ weight: v } as Partial<ExerciseSet>); }}
                 />
               </div>
             )}
@@ -65,24 +64,21 @@ export function SetRow({ set, index, category, onUpdate, onDelete }: Props) {
                 <div className="set-field">
                   <span className={labelClass}>Incl %</span>
                   <input
-                    type="number"
+                    key={set.id + '_i'}
+                    type="text"
                     inputMode="decimal"
-                    min={0}
-                    max={30}
-                    step={0.5}
-                    value={set.incline ?? ''}
-                    onChange={e => onUpdate({ incline: parseFloat(e.target.value) || undefined } as Partial<ExerciseSet>)}
+                    defaultValue={set.incline ?? ''}
+                    onChange={e => { const v = parseFloat(e.target.value); onUpdate({ incline: isNaN(v) ? undefined : v } as Partial<ExerciseSet>); }}
                   />
                 </div>
                 <div className="set-field">
                   <span className={labelClass}>km/h</span>
                   <input
-                    type="number"
+                    key={set.id + '_s'}
+                    type="text"
                     inputMode="decimal"
-                    min={0}
-                    step={0.1}
-                    value={set.speed ?? ''}
-                    onChange={e => onUpdate({ speed: parseFloat(e.target.value) || undefined } as Partial<ExerciseSet>)}
+                    defaultValue={set.speed ?? ''}
+                    onChange={e => { const v = parseFloat(e.target.value); onUpdate({ speed: isNaN(v) ? undefined : v } as Partial<ExerciseSet>); }}
                   />
                 </div>
                 <div className="set-field" style={{ maxWidth: 52 }}>
@@ -134,12 +130,11 @@ export function SetRow({ set, index, category, onUpdate, onDelete }: Props) {
                 <div className="set-field">
                   <span className={labelClass}>Dist</span>
                   <input
-                    type="number"
+                    key={set.id + '_d'}
+                    type="text"
                     inputMode="decimal"
-                    min={0}
-                    step={0.1}
-                    value={set.distance ?? ''}
-                    onChange={e => onUpdate({ distance: parseFloat(e.target.value) || undefined } as Partial<ExerciseSet>)}
+                    defaultValue={set.distance ?? ''}
+                    onChange={e => { const v = parseFloat(e.target.value); onUpdate({ distance: isNaN(v) ? undefined : v } as Partial<ExerciseSet>); }}
                   />
                 </div>
                 <div className="set-field" style={{ maxWidth: 52 }}>
