@@ -11,8 +11,8 @@ export default function App() {
     ? store.workouts.find(w => w.id === activeWorkoutId) ?? null
     : null;
 
-  function handleCreateWorkout(name: string) {
-    const w = store.createWorkout(name);
+  function handleCreateWorkout(name: string, date: string) {
+    const w = store.createWorkout(name, date);
     setActiveWorkoutId(w.id);
   }
 
@@ -29,6 +29,7 @@ export default function App() {
           onAddSet={(exerciseId, set) => store.addSet(currentWorkout.id, exerciseId, set)}
           onUpdateSet={(exerciseId, setId, updates) => store.updateSet(currentWorkout.id, exerciseId, setId, updates)}
           onDeleteSet={(exerciseId, setId) => store.deleteSet(currentWorkout.id, exerciseId, setId)}
+          onUpdateDate={date => store.updateWorkoutDate(currentWorkout.id, date)}
           generateId={store.generateSetId}
         />
       </div>

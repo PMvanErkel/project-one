@@ -4,7 +4,7 @@ export interface WeightliftingSet {
   id: string;
   type: 'weightlifting';
   weight: number;
-  unit: 'kg' | 'lbs';
+  unit: 'kg' | 'lbs' | 'bw';
   reps: number;
   completed: boolean;
 }
@@ -12,9 +12,12 @@ export interface WeightliftingSet {
 export interface CardioSet {
   id: string;
   type: 'cardio';
+  cardioMode?: 'standard' | 'treadmill';
   duration: number; // seconds
   distance?: number;
   distanceUnit?: 'km' | 'mi';
+  incline?: number; // treadmill incline %
+  speed?: number;   // treadmill speed km/h
   completed: boolean;
 }
 

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { GripVertical, Trash2, Plus, ChevronDown, ChevronUp } from 'lucide-react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import type { Exercise, ExerciseSet, ExerciseCategory } from '../types';
+import type { Exercise, ExerciseSet, ExerciseCategory, CardioSet, WeightliftingSet } from '../types';
 import { SetRow } from './SetRow';
 
 interface Props {
@@ -31,15 +31,16 @@ function barClass(cat: ExerciseCategory) {
   return cat === 'weightlifting' ? 'bar-lift' : cat === 'cardio' ? 'bar-cardio' : 'bar-recovery';
 }
 
-function newSet(cat: ExerciseCategory, id: string): ExerciseSet {
-  if (cat === 'weightlifting') return { id, type: 'weightlifting', weight: 0, unit: 'kg', reps: 0, completed: false };
-  if (cat === 'cardio') return { id, type: 'cardio', duration: 0, completed: false };
-  return { id, type: 'recovery', duration: 0, completed: false };
-}
-
 export function ExerciseCard({ exercise, onAddSet, onUpdateSet, onDeleteSet, onDeleteExercise, generateId }: Props) {
   const [collapsed, setCollapsed] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+
+  // Treadmill mode for cardio — inferred from first set, then controlled by toggle
+  const [treadmill, setTreadmill] = useState<boolean>(() => {
+    if (exercise.category !== 'cardio') return false;
+    const first = exercise.sets.find(s => s.type === 'cardio') as CardioSet | undefined;
+    return first?.cardioMode === 'treadmill';
+  });
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: exercise.id });
   const style = {
@@ -51,6 +52,26 @@ export function ExerciseCard({ exercise, onAddSet, onUpdateSet, onDeleteSet, onD
   const totalSets = exercise.sets.length;
   const doneSets = exercise.sets.filter(s => s.completed).length;
   const progress = totalSets > 0 ? (doneSets / totalSets) * 100 : 0;
+
+  function handleToggleTreadmill() {
+    const next = !treadmill;
+    setTreadmill(next);
+    exercise.sets.forEach(s => {
+      onUpdateSet(s.id, { cardioMode: next ? 'treadmill' : 'standard' } as unknown as Partial<ExerciseSet>);
+    });
+  }
+
+  function handleAddSet() {
+    const id = generateId();
+    if (exercise.category === 'weightlifting') {
+      const last = [...exercise.sets].reverse().find(s => s.type === 'weightlifting') as WeightliftingSet | undefined;
+      onAddSet({ id, type: 'weightlifting', weight: 0, unit: last?.unit ?? 'kg', reps: 0, completed: false });
+    } else if (exercise.category === 'cardio') {
+      onAddSet({ id, type: 'cardio', cardioMode: treadmill ? 'treadmill' : 'standard', duration: 0, completed: false });
+    } else {
+      onAddSet({ id, type: 'recovery', duration: 0, completed: false });
+    }
+  }
 
   return (
     <div ref={setNodeRef} style={style} className="exercise-card">
@@ -66,6 +87,16 @@ export function ExerciseCard({ exercise, onAddSet, onUpdateSet, onDeleteSet, onD
           <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
             {doneSets}/{totalSets}
           </span>
+        )}
+        {exercise.category === 'cardio' && (
+          <button
+            className="icon-btn"
+            onClick={handleToggleTreadmill}
+            title={treadmill ? 'Switch to standard' : 'Switch to treadmill'}
+            style={{ fontSize: '0.65rem', fontWeight: 700, color: treadmill ? 'var(--accent-cardio)' : 'var(--text-muted)', padding: '0 4px', width: 'auto' }}
+          >
+            {treadmill ? 'TM' : 'STD'}
+          </button>
         )}
         <button className="icon-btn" onClick={() => setCollapsed(c => !c)} aria-label="Toggle">
           {collapsed ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
@@ -109,7 +140,7 @@ export function ExerciseCard({ exercise, onAddSet, onUpdateSet, onDeleteSet, onD
 
           <button
             className={`add-set-btn ${addSetColor(exercise.category)}`}
-            onClick={() => onAddSet(newSet(exercise.category, generateId()))}
+            onClick={handleAddSet}
           >
             <Plus size={15} />
             Add set

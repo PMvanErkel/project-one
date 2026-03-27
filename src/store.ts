@@ -27,15 +27,19 @@ export function useGymStore() {
     saveWorkouts(workouts);
   }, [workouts]);
 
-  function createWorkout(name: string): Workout {
+  function createWorkout(name: string, date?: string): Workout {
     const workout: Workout = {
       id: generateId(),
       name,
-      date: new Date().toISOString(),
+      date: date ?? new Date().toISOString(),
       exercises: [],
     };
     setWorkouts(prev => [workout, ...prev]);
     return workout;
+  }
+
+  function updateWorkoutDate(id: string, date: string) {
+    setWorkouts(prev => prev.map(w => w.id === id ? { ...w, date } : w));
   }
 
   function deleteWorkout(id: string) {
@@ -131,6 +135,7 @@ export function useGymStore() {
   return {
     workouts,
     createWorkout,
+    updateWorkoutDate,
     deleteWorkout,
     addExercise,
     deleteExercise,
