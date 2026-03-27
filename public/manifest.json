@@ -1,0 +1,20 @@
+{
+  "name": "Gym Tracker",
+  "short_name": "Gym Tracker",
+  "start_url": "/project-one/",
+  "display": "standalone",
+  "background_color": "#6B7A52",
+  "theme_color": "#6B7A52",
+  "icons": [
+    {
+      "src": "/project-one/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/project-one/apple-touch-icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
