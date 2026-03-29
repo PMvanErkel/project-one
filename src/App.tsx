@@ -2,9 +2,11 @@ import { useState } from 'react';
 import { useGymStore } from './store';
 import { WorkoutList } from './components/WorkoutList';
 import { WorkoutDetail } from './components/WorkoutDetail';
+import { ProgressPage } from './components/ProgressPage';
 
 export default function App() {
   const [activeWorkoutId, setActiveWorkoutId] = useState<string | null>(null);
+  const [showProgress, setShowProgress] = useState(false);
   const store = useGymStore();
 
   const currentWorkout = activeWorkoutId
@@ -36,6 +38,14 @@ export default function App() {
     );
   }
 
+  if (showProgress) {
+    return (
+      <div className="app">
+        <ProgressPage workouts={store.workouts} onBack={() => setShowProgress(false)} />
+      </div>
+    );
+  }
+
   return (
     <div className="app">
       <WorkoutList
@@ -44,6 +54,7 @@ export default function App() {
         onCreate={handleCreateWorkout}
         onDelete={store.deleteWorkout}
         onImport={store.importWorkouts}
+        onNavigateProgress={() => setShowProgress(true)}
       />
     </div>
   );
