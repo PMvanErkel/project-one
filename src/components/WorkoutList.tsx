@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { Plus, Dumbbell, ChevronRight, Trash2, Share2 } from 'lucide-react';
+import { Plus, Dumbbell, ChevronRight, Trash2, Share2, TrendingUp } from 'lucide-react';
 import type { Workout } from '../types';
 
 interface Props {
@@ -8,6 +8,7 @@ interface Props {
   onCreate: (name: string, date: string) => void;
   onDelete: (id: string) => void;
   onImport: (workouts: Workout[]) => void;
+  onNavigateProgress: () => void;
 }
 
 function formatDate(iso: string) {
@@ -56,7 +57,7 @@ function dateInputToISO(val: string): string {
   return new Date(y, m - 1, day, 12, 0, 0).toISOString();
 }
 
-export function WorkoutList({ workouts, onSelect, onCreate, onDelete, onImport }: Props) {
+export function WorkoutList({ workouts, onSelect, onCreate, onDelete, onImport, onNavigateProgress }: Props) {
   const [showModal, setShowModal] = useState(false);
   const [showDataModal, setShowDataModal] = useState(false);
   const [importText, setImportText] = useState('');
@@ -116,6 +117,13 @@ export function WorkoutList({ workouts, onSelect, onCreate, onDelete, onImport }
       <div className="header">
         <Dumbbell size={22} color="var(--accent-lift)" />
         <h1>Gym Tracker</h1>
+        <button
+          onClick={onNavigateProgress}
+          style={{ color: 'var(--text-muted)', padding: 4, display: 'flex', flexShrink: 0 }}
+          aria-label="Progress charts"
+        >
+          <TrendingUp size={18} />
+        </button>
         <button
           onClick={() => { setShowDataModal(true); setImportDone(false); setImportError(''); }}
           style={{ color: 'var(--text-muted)', padding: 4, display: 'flex', flexShrink: 0 }}
