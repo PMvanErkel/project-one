@@ -46,7 +46,7 @@ export function useGymStore() {
     setWorkouts(prev => prev.filter(w => w.id !== id));
   }
 
-  function addExercise(workoutId: string, name: string, category: ExerciseCategory) {
+  function addExercise(workoutId: string, name: string, category: ExerciseCategory, initialSets: ExerciseSet[] = []) {
     setWorkouts(prev =>
       prev.map(w => {
         if (w.id !== workoutId) return w;
@@ -54,7 +54,7 @@ export function useGymStore() {
           id: generateId(),
           name,
           category,
-          sets: [],
+          sets: initialSets,
           order: w.exercises.length,
         };
         return { ...w, exercises: [...w.exercises, exercise] };
