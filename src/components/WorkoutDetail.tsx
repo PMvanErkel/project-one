@@ -45,6 +45,19 @@ function getExerciseSuggestions(query: string, allWorkouts: Workout[], currentWo
     .slice(0, 6);
 }
 
+function getLastSessionSets(name: string, allWorkouts: Workout[], currentWorkoutId: string, generateId: () => string): ExerciseSet[] {
+  const sorted = [...allWorkouts]
+    .filter(w => w.id !== currentWorkoutId)
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  for (const w of sorted) {
+    const ex = w.exercises.find(e => e.name.toLowerCase() === name.toLowerCase());
+    if (ex && ex.sets.length > 0) {
+      return ex.sets.map(s => ({ ...s, id: generateId(), completed: false }));
+    }
+  }
+  return [];
+}
+
 function formatLastSet(set: ExerciseSet | null): string {
   if (!set) return '';
   if (set.type === 'weightlifting') {
@@ -60,7 +73,7 @@ interface Props {
   workout: Workout;
   allWorkouts: Workout[];
   onBack: () => void;
-  onAddExercise: (name: string, category: ExerciseCategory) => void;
+  onAddExercise: (name: string, category: ExerciseCategory, initialSets?: ExerciseSet[]) => void;
   onDeleteExercise: (exerciseId: string) => void;
   onReorderExercises: (exercises: Exercise[]) => void;
   onAddSet: (exerciseId: string, set: ExerciseSet) => void;
@@ -147,7 +160,8 @@ export function WorkoutDetail({
   function handleAdd() {
     const trimmed = newName.trim();
     if (!trimmed) return;
-    onAddExercise(trimmed, newCategory);
+    const lastSets = getLastSessionSets(trimmed, allWorkouts, workout.id, generateId);
+    onAddExercise(trimmed, newCategory, lastSets);
     setNewName('');
     setShowModal(false);
   }

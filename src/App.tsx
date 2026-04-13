@@ -25,7 +25,7 @@ export default function App() {
           workout={currentWorkout}
           allWorkouts={store.workouts}
           onBack={() => setActiveWorkoutId(null)}
-          onAddExercise={(name, category) => store.addExercise(currentWorkout.id, name, category)}
+          onAddExercise={(name, category, sets) => store.addExercise(currentWorkout.id, name, category, sets)}
           onDeleteExercise={id => store.deleteExercise(currentWorkout.id, id)}
           onReorderExercises={exercises => store.reorderExercises(currentWorkout.id, exercises)}
           onAddSet={(exerciseId, set) => store.addSet(currentWorkout.id, exerciseId, set)}
